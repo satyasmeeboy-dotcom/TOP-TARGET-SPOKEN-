@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Top Target Spoken English</string>
+    <string name="app_tagline">Learn English, Speak Confidently!</string>
+    <string name="founder_credit">Founder &amp; Creator: CHENI</string>
+    <string name="brand_badge_desc">Top Target Spoken English Logo</string>
+    <string name="teacher_avatar_desc">AI Personal English Teacher Avatar</string>
+    <string name="classroom_banner_desc">Virtual Classroom Banner</string>
+    <string name="certificate_seal_desc">Achievement Certificate Seal</string>
+    <string name="ai_notice_firebase">Sample AI Tutor Mode active. Live Gemini AI responses require enabling Firebase AI Logic.</string>
+    <string name="privacy_promise_short">100% Free &amp; Private • No Login • No Personal Data • Local Storage</string>
+</resources>
