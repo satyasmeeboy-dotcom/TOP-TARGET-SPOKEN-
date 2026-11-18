@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,9 +27,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -48,8 +49,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -65,9 +69,11 @@ import com.example.speech.SpeechHelper
 import com.example.ui.components.AnimatedTeacherAvatar
 import com.example.ui.components.BilingualText
 import com.example.ui.components.DigitalWhiteboardCard
+import com.example.ui.components.FolderPresets
 import com.example.ui.components.GrammarFeedbackCard
 import com.example.ui.components.MicrophonePrivacyDialog
 import com.example.ui.components.SampleAiNoticeBanner
+import com.example.ui.theme.PureWhite
 
 @Composable
 fun TeacherClassroomScreen(
@@ -124,70 +130,85 @@ fun TeacherClassroomScreen(
             SampleAiNoticeBanner()
             Spacer(Modifier.height(8.dp))
 
-            // Top Classroom Controls + Animated Teacher + Whiteboard
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // Top Classroom Controls + Animated Teacher in Vibrant Header Card
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = PureWhite),
+                border = BorderStroke(1.5.dp, FolderPresets.Emerald.primary.copy(alpha = 0.4f)),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                AnimatedTeacherAvatar(
-                    isSpeaking = isSpeaking,
-                    isListening = isListening,
-                    isThinking = isThinking,
-                    bilingualMode = bilingualMode,
-                    avatarSize = 78.dp
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box {
-                            OutlinedButton(
-                                onClick = { showTopicMenu = true },
-                                modifier = Modifier
-                                    .minimumInteractiveComponentSize()
-                                    .testTag("teacher_topic_picker")
-                            ) {
-                                Text("Topic: ${activeTopic.titleEn}", maxLines = 1)
-                            }
-                            DropdownMenu(
-                                expanded = showTopicMenu,
-                                onDismissRequest = { showTopicMenu = false }
-                            ) {
-                                GrammarCurriculum.allTopics.forEach { topic ->
-                                    DropdownMenuItem(
-                                        text = { Text("${topic.order}. ${topic.titleEn} (${topic.titleHi})") },
-                                        onClick = {
-                                            showTopicMenu = false
-                                            onSelectTopic(topic)
-                                        }
-                                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(FolderPresets.Emerald.softTint, FolderPresets.Sky.softTint)
+                            )
+                        )
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    AnimatedTeacherAvatar(
+                        isSpeaking = isSpeaking,
+                        isListening = isListening,
+                        isThinking = isThinking,
+                        bilingualMode = bilingualMode,
+                        avatarSize = 82.dp
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box {
+                                OutlinedButton(
+                                    onClick = { showTopicMenu = true },
+                                    border = BorderStroke(1.2.dp, FolderPresets.Emerald.primary),
+                                    modifier = Modifier
+                                        .minimumInteractiveComponentSize()
+                                        .testTag("teacher_topic_picker")
+                                ) {
+                                    Text("Topic: ${activeTopic.titleEn}", maxLines = 1, color = FolderPresets.Emerald.primary)
+                                }
+                                DropdownMenu(
+                                    expanded = showTopicMenu,
+                                    onDismissRequest = { showTopicMenu = false }
+                                ) {
+                                    GrammarCurriculum.allTopics.forEach { topic ->
+                                        DropdownMenuItem(
+                                            text = { Text("${topic.order}. ${topic.titleEn} (${topic.titleHi})") },
+                                            onClick = {
+                                                showTopicMenu = false
+                                                onSelectTopic(topic)
+                                            }
+                                        )
+                                    }
                                 }
                             }
+                            Spacer(Modifier.width(6.dp))
+                            IconButton(
+                                onClick = {
+                                    if (autoSpeak) speechHelper.stopSpeaking()
+                                    onToggleAutoSpeak(!autoSpeak)
+                                },
+                                modifier = Modifier
+                                    .minimumInteractiveComponentSize()
+                                    .testTag("teacher_tts_toggle")
+                            ) {
+                                Icon(
+                                    imageVector = if (autoSpeak) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
+                                    contentDescription = if (autoSpeak) "Mute Teacher Voice" else "Enable Teacher Voice",
+                                    tint = FolderPresets.Emerald.primary
+                                )
+                            }
                         }
-                        Spacer(Modifier.width(6.dp))
-                        IconButton(
-                            onClick = {
-                                if (autoSpeak) speechHelper.stopSpeaking()
-                                onToggleAutoSpeak(!autoSpeak)
-                            },
-                            modifier = Modifier
-                                .minimumInteractiveComponentSize()
-                                .testTag("teacher_tts_toggle")
-                        ) {
-                            Icon(
-                                imageVector = if (autoSpeak) Icons.Default.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
-                                contentDescription = if (autoSpeak) "Mute Teacher Voice" else "Enable Teacher Voice",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        items(TeacherStage.entries) { st ->
-                            FilterChip(
-                                selected = st == teacherStage,
-                                onClick = onAdvanceStage,
-                                label = { Text("${st.stepNumber}. ${st.labelEn}") }
-                            )
+                        Spacer(Modifier.height(4.dp))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            items(TeacherStage.entries) { st ->
+                                FilterChip(
+                                    selected = st == teacherStage,
+                                    onClick = onAdvanceStage,
+                                    label = { Text("${st.stepNumber}. ${st.labelEn}") }
+                                )
+                            }
                         }
                     }
                 }
@@ -211,40 +232,41 @@ fun TeacherClassroomScreen(
                         horizontalArrangement = if (msg.fromTeacher) Arrangement.Start else Arrangement.End
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = if (msg.fromTeacher) MaterialTheme.colorScheme.surface
-                            else MaterialTheme.colorScheme.primary,
-                            border = if (msg.fromTeacher) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null,
-                            modifier = Modifier.fillMaxWidth(0.9f)
+                            shape = RoundedCornerShape(18.dp),
+                            color = if (msg.fromTeacher) PureWhite
+                            else FolderPresets.Emerald.primary,
+                            border = if (msg.fromTeacher) BorderStroke(1.5.dp, FolderPresets.Emerald.primary.copy(alpha = 0.35f)) else null,
+                            shadowElevation = 2.dp,
+                            modifier = Modifier.fillMaxWidth(0.92f)
                         ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
+                            Column(modifier = Modifier.padding(14.dp)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     val teacherHeader = when (bilingualMode) {
-                                        BilingualMode.HINDI_ASSIST -> "CHENI (AI शिक्षक व दोस्त)"
-                                        else -> "CHENI (AI Teacher & Friend)"
+                                        BilingualMode.HINDI_ASSIST -> "AI शिक्षक"
+                                        else -> "AI Teacher"
                                     }
                                     val studentHeader = if (bilingualMode == BilingualMode.HINDI_ASSIST) "आप (You)" else "You"
                                     Text(
                                         text = if (msg.fromTeacher) teacherHeader else studentHeader,
-                                        style = MaterialTheme.typography.labelSmall,
+                                        style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (msg.fromTeacher) MaterialTheme.colorScheme.primary
+                                        color = if (msg.fromTeacher) FolderPresets.Emerald.primary
                                         else MaterialTheme.colorScheme.onPrimary
                                     )
                                     if (msg.fromTeacher) {
                                         IconButton(
                                             onClick = { speechHelper.speakEnglish(msg.englishText, speechRate) },
-                                            modifier = Modifier.size(28.dp)
+                                            modifier = Modifier.size(32.dp)
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.VolumeUp,
+                                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                                 contentDescription = "Listen to teacher message",
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(16.dp)
+                                                tint = FolderPresets.Emerald.primary,
+                                                modifier = Modifier.size(18.dp)
                                             )
                                         }
                                     }

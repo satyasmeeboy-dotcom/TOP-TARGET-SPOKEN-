@@ -81,7 +81,8 @@ class ExampleUnitTest {
         assertFalse(reply.hindiText.contains("चेनी"))
 
         val firstPair = ai.bilingualComplimentPair(0)
-        assertTrue(firstPair.first.contains("CHENI") && firstPair.second.contains("CHENI"))
+        assertFalse(firstPair.first.contains("CHENI"))
+        assertFalse(firstPair.second.contains("CHENI"))
         assertFalse(firstPair.second.contains("चेनी"))
     }
 
@@ -149,7 +150,7 @@ class ExampleUnitTest {
 
         val lowCompliment = ai.performanceCompliment(scoreRatio = 0.2f, isCorrect = false, context = "grammar")
         assertFalse(lowCompliment.contains("Excellent"))
-        assertTrue(lowCompliment.contains("CHENI"))
+        assertFalse(lowCompliment.contains("CHENI"))
 
         val highCompliment = ai.performanceCompliment(scoreRatio = 0.95f, isCorrect = true, context = "grammar")
         assertTrue(highCompliment.contains("Excellent"))

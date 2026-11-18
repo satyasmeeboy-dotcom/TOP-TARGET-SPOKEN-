@@ -42,3 +42,28 @@ val DarkSurface = Color(0xFF10231C)
 val DarkSurfaceVariant = Color(0xFF193329)
 val DarkOnSurface = Color(0xFFE6F4EE)
 val DarkMutedText = Color(0xFFA7C7B8)
+
+// Creative Colorful Study Folder Accents (high-contrast, clear & cheerful)
+val FolderEmerald = Color(0xFF059669)
+val FolderEmeraldLight = Color(0xFFECFDF5)
+
+val FolderSky = Color(0xFF0284C7)
+val FolderSkyLight = Color(0xFFE0F2FE)
+
+val FolderIndigo = Color(0xFF4F46E5)
+val FolderIndigoLight = Color(0xFFEEF2FF)
+
+val FolderAmber = Color(0xFFD97706)
+val FolderAmberLight = Color(0xFFFEF3C7)
+
+val FolderViolet = Color(0xFF7C3AED)
+val FolderVioletLight = Color(0xFFF3E8FF)
+
+val FolderTeal = Color(0xFF0D9488)
+val FolderTealLight = Color(0xFFCCFBF1)
+
+val FolderCoral = Color(0xFFEA580C)
+val FolderCoralLight = Color(0xFFFFEDD5)
+
+val FolderRose = Color(0xFFE11D48)
+val FolderRoseLight = Color(0xFFFFE4E6)

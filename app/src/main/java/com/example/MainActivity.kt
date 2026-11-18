@@ -39,8 +39,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -66,7 +68,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -87,6 +91,11 @@ import com.example.ui.screens.ProgressAndPrivacyScreen
 import com.example.ui.screens.SkillsPracticeScreen
 import com.example.ui.screens.TeacherClassroomScreen
 import com.example.ui.theme.EmeraldPrimary
+import com.example.ui.theme.EmeraldPrimaryContainer
+import com.example.ui.theme.FolderSkyLight
+import com.example.ui.theme.MintSurface
+import com.example.ui.theme.MutedForestText
+import com.example.ui.theme.PureWhite
 import com.example.ui.theme.TopTargetTheme
 import kotlinx.coroutines.delay
 
@@ -158,6 +167,8 @@ fun TopTargetApp(viewModel: AppViewModel = viewModel()) {
     val speechError by viewModel.speechHelper.speechError.collectAsStateWithLifecycle()
 
     var learnSectionIndex by rememberSaveable { mutableIntStateOf(0) }
+    var wordsRequestedTab by rememberSaveable { mutableStateOf<Int?>(null) }
+    var wordsTabNonce by rememberSaveable { mutableIntStateOf(0) }
     var showSplash by rememberSaveable { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -168,7 +179,7 @@ fun TopTargetApp(viewModel: AppViewModel = viewModel()) {
     val navTabs = remember {
         listOf(
             NavTab(AppRoutes.HOME, "Home", Icons.Filled.Home, Icons.Outlined.Home, "nav_home"),
-            NavTab(AppRoutes.TEACHER, "CHENI", Icons.Filled.RecordVoiceOver, Icons.Outlined.RecordVoiceOver, "nav_teacher"),
+            NavTab(AppRoutes.TEACHER, "AI Teacher", Icons.Filled.RecordVoiceOver, Icons.Outlined.RecordVoiceOver, "nav_teacher"),
             NavTab(AppRoutes.LEARN, "Courses", Icons.Filled.School, Icons.Outlined.School, "nav_learn"),
             NavTab(AppRoutes.WORDS, "Words & Play", Icons.Filled.AutoAwesome, Icons.Outlined.AutoAwesome, "nav_words"),
             NavTab(AppRoutes.PROGRESS, "Progress", Icons.Filled.BarChart, Icons.Outlined.BarChart, "nav_progress")
@@ -209,20 +220,43 @@ fun TopTargetApp(viewModel: AppViewModel = viewModel()) {
                 bottomBar = {
                     if (!useRail && currentRoute != AppRoutes.ASSESSMENT && currentRoute != AppRoutes.DAILY_ROUTINE) {
                         NavigationBar(
-                            containerColor = MaterialTheme.colorScheme.surface
+                            containerColor = PureWhite,
+                            tonalElevation = 4.dp
                         ) {
                             navTabs.forEach { tab ->
                                 val selected = currentRoute == tab.route
                                 NavigationBarItem(
                                     selected = selected,
-                                    onClick = { navigateTopTab(tab.route) },
+                                    onClick = {
+                                        if (tab.route == AppRoutes.WORDS) {
+                                            wordsRequestedTab = null
+                                            wordsTabNonce++
+                                        }
+                                        navigateTopTab(tab.route)
+                                    },
                                     icon = {
                                         Icon(
                                             imageVector = if (selected) tab.selectedIcon else tab.unselectedIcon,
                                             contentDescription = tab.label
                                         )
                                     },
-                                    label = { Text(tab.label, maxLines = 1) },
+                                    label = {
+                                        Text(
+                                            tab.label,
+                                            fontSize = 12.sp,
+                                            maxLines = 1,
+                                            softWrap = false,
+                                            overflow = TextOverflow.Ellipsis,
+                                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                                        )
+                                    },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        selectedIconColor = EmeraldPrimary,
+                                        selectedTextColor = EmeraldPrimary,
+                                        indicatorColor = EmeraldPrimaryContainer,
+                                        unselectedIconColor = MutedForestText,
+                                        unselectedTextColor = MutedForestText
+                                    ),
                                     modifier = Modifier.testTag(tab.tag)
                                 )
                             }
@@ -233,22 +267,45 @@ fun TopTargetApp(viewModel: AppViewModel = viewModel()) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(MintSurface, PureWhite, FolderSkyLight.copy(alpha = 0.25f))
+                            )
+                        )
                         .padding(innerPadding)
                 ) {
                     if (useRail && currentRoute != AppRoutes.ASSESSMENT && currentRoute != AppRoutes.DAILY_ROUTINE) {
-                        NavigationRail(containerColor = MaterialTheme.colorScheme.surface) {
+                        NavigationRail(containerColor = PureWhite) {
                             navTabs.forEach { tab ->
                                 val selected = currentRoute == tab.route
                                 NavigationRailItem(
                                     selected = selected,
-                                    onClick = { navigateTopTab(tab.route) },
+                                    onClick = {
+                                        if (tab.route == AppRoutes.WORDS) {
+                                            wordsRequestedTab = null
+                                            wordsTabNonce++
+                                        }
+                                        navigateTopTab(tab.route)
+                                    },
                                     icon = {
                                         Icon(
                                             imageVector = if (selected) tab.selectedIcon else tab.unselectedIcon,
                                             contentDescription = tab.label
                                         )
                                     },
-                                    label = { Text(tab.label) },
+                                    label = {
+                                        Text(
+                                            tab.label,
+                                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                                        )
+                                    },
+                                    colors = NavigationRailItemDefaults.colors(
+                                        selectedIconColor = EmeraldPrimary,
+                                        selectedTextColor = EmeraldPrimary,
+                                        indicatorColor = EmeraldPrimaryContainer,
+                                        unselectedIconColor = MutedForestText,
+                                        unselectedTextColor = MutedForestText
+                                    ),
                                     modifier = Modifier.testTag(tab.tag)
                                 )
                             }
@@ -277,7 +334,11 @@ fun TopTargetApp(viewModel: AppViewModel = viewModel()) {
                                     learnSectionIndex = 1
                                     navigateTopTab(AppRoutes.LEARN)
                                 },
-                                onOpenWordsAndGames = { navigateTopTab(AppRoutes.WORDS) },
+                                onOpenWordsTab = { tabIdx ->
+                                    wordsRequestedTab = tabIdx
+                                    wordsTabNonce++
+                                    navigateTopTab(AppRoutes.WORDS)
+                                },
                                 onOpenDailyRoutine = { navController.navigate(AppRoutes.DAILY_ROUTINE) },
                                 onOpenProgress = { navigateTopTab(AppRoutes.PROGRESS) },
                                 onToggleDailyTask = { key, done -> viewModel.toggleDailyTask(key, done) },
@@ -324,7 +385,7 @@ fun TopTargetApp(viewModel: AppViewModel = viewModel()) {
                                             shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                                             modifier = Modifier.testTag("learn_tab_grammar")
                                         ) {
-                                            Text("18 Grammar Topics")
+                                            Text("18 Grammar Topics", maxLines = 1, overflow = TextOverflow.Ellipsis)
                                         }
                                         SegmentedButton(
                                             selected = learnSectionIndex == 1,
@@ -332,7 +393,7 @@ fun TopTargetApp(viewModel: AppViewModel = viewModel()) {
                                             shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
                                             modifier = Modifier.testTag("learn_tab_skills")
                                         ) {
-                                            Text("4 Skills + Grammar Fix")
+                                            Text("4 Skills + Fix", maxLines = 1, overflow = TextOverflow.Ellipsis)
                                         }
                                     }
                                 }
@@ -384,6 +445,8 @@ fun TopTargetApp(viewModel: AppViewModel = viewModel()) {
                                 speechHelper = viewModel.speechHelper,
                                 routineFeedback = routineFeedback,
                                 dailyPracticeFeedback = dailyPracticeFeedback,
+                                requestedTab = wordsRequestedTab,
+                                tabRequestNonce = wordsTabNonce,
                                 onMarkWordLearned = { id, word, isGenZ -> viewModel.markWordLearned(id, word, isGenZ) },
                                 onMarkPhraseLearned = { id, phrase -> viewModel.markPhraseOrIdiomLearned(id, phrase) },
                                 onMarkRoutinePracticed = { id -> viewModel.markRoutineStepPracticed(id) },
@@ -500,7 +563,7 @@ fun TopTargetApp(viewModel: AppViewModel = viewModel()) {
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "Founder & Creator: CHENI",
+                        text = "Personal English Learning Academy",
                         style = MaterialTheme.typography.labelLarge,
                         color = Color.White.copy(alpha = 0.9f)
                     )

@@ -23,13 +23,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Hearing
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Spellcheck
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -58,6 +58,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import com.example.data.ai.SpeakingEvaluation
 import com.example.data.curriculum.PracticeAndNewsCatalog
 import com.example.data.local.MistakeLogEntity
@@ -66,9 +69,11 @@ import com.example.model.GrammarMistakeFeedback
 import com.example.model.SkillType
 import com.example.speech.SpeechHelper
 import com.example.ui.components.BilingualText
+import com.example.ui.components.FolderPresets
 import com.example.ui.components.GrammarFeedbackCard
 import com.example.ui.components.MicrophonePrivacyDialog
 import com.example.ui.components.SampleAiNoticeBanner
+import com.example.ui.theme.PureWhite
 
 @Composable
 fun SkillsPracticeScreen(
@@ -86,25 +91,81 @@ fun SkillsPracticeScreen(
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf(
-        "Grammar Fix" to Icons.Default.Spellcheck,
-        "Speaking" to Icons.Default.Mic,
-        "Listening" to Icons.Default.Hearing,
-        "Reading" to Icons.Default.MenuBook,
-        "Writing" to Icons.Default.EditNote
+        Triple("Grammar Fix", Icons.Default.Spellcheck, FolderPresets.Coral),
+        Triple("Speaking", Icons.Default.Mic, FolderPresets.Emerald),
+        Triple("Listening", Icons.Default.Hearing, FolderPresets.Sky),
+        Triple("Reading", Icons.AutoMirrored.Filled.MenuBook, FolderPresets.Amber),
+        Triple("Writing", Icons.Default.EditNote, FolderPresets.Violet)
     )
+    val activeTriple = tabs[selectedTab]
+    val activeAccent = activeTriple.third
 
     Column(modifier = Modifier.fillMaxSize()) {
+        Surface(
+            color = activeAccent.softTint,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(listOf(activeAccent.softTint, PureWhite))
+                    )
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(activeAccent.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(activeTriple.second, contentDescription = null, tint = PureWhite, modifier = Modifier.size(19.dp))
+                }
+                Spacer(Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = "${activeTriple.first} Folder",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = activeAccent.primary
+                    )
+                    Text(
+                        text = "Interactive Practice • Hindi + English Help",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
         ScrollableTabRow(
             selectedTabIndex = selectedTab,
             containerColor = MaterialTheme.colorScheme.surface,
             edgePadding = 12.dp
         ) {
-            tabs.forEachIndexed { idx, pair ->
+            tabs.forEachIndexed { idx, triple ->
+                val isSelected = selectedTab == idx
+                val tabAccent = triple.third
                 Tab(
-                    selected = selectedTab == idx,
+                    selected = isSelected,
                     onClick = { selectedTab = idx },
-                    text = { Text(pair.first) },
-                    icon = { Icon(pair.second, contentDescription = null, modifier = Modifier.size(18.dp)) }
+                    text = {
+                        Text(
+                            triple.first,
+                            color = if (isSelected) tabAccent.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    icon = {
+                        Icon(
+                            triple.second,
+                            contentDescription = null,
+                            tint = if (isSelected) tabAccent.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 )
             }
         }
@@ -163,24 +224,25 @@ private fun GrammarCheckerTab(
         "Let's discuss about grammer rules."
     )
 
+    val accent = FolderPresets.Coral
     LazyColumn(
-        modifier = Modifier.fillMaxSize().widthIn(max = 680.dp),
+        modifier = Modifier.fillMaxSize().widthIn(max = 720.dp),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         item {
-            Text("Automatic AI Grammar Correction", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text("Checks Tense, Spelling, Articles, Prepositions, Verb Forms, SVA, Structure & Vocabulary.", style = MaterialTheme.typography.bodySmall)
+            Text("Automatic AI Grammar Correction", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = accent.primary)
+            Text("Checks Tense, Spelling, Articles, Prepositions, Verb Forms, SVA, Structure & Vocabulary.", style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(6.dp))
             SampleAiNoticeBanner()
         }
         item {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(samples) { s ->
                     FilterChip(selected = sentence == s, onClick = { sentence = s }, label = { Text(s.take(26) + "...") })
                 }
             }
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = sentence,
                 onValueChange = { sentence = it },
@@ -188,9 +250,10 @@ private fun GrammarCheckerTab(
                 minLines = 2,
                 modifier = Modifier.fillMaxWidth().testTag("grammar_checker_input")
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
             Button(
                 onClick = { onCheckGrammar(sentence) },
+                colors = ButtonDefaults.buttonColors(containerColor = accent.primary),
                 modifier = Modifier.fillMaxWidth().minimumInteractiveComponentSize().testTag("run_grammar_check_button")
             ) {
                 Text("Analyze & Teach Why")
@@ -283,7 +346,7 @@ private fun SpeakingPracticeTab(
                     selectedScenario.keyPhrases.forEach { p -> Text("• $p", style = MaterialTheme.typography.bodySmall) }
                     Spacer(Modifier.height(8.dp))
                     OutlinedButton(onClick = { speechHelper.speakEnglish(selectedScenario.sampleLines.joinToString(" "), speechRate) }) {
-                        Icon(Icons.Default.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
                         Text("Hear Sample Answer")
                     }
@@ -408,9 +471,10 @@ private fun ListeningPracticeTab(
                                 if (isSpeaking) speechHelper.stopSpeaking()
                                 else speechHelper.speakEnglish(selectedLesson.audioScriptEn, speechRate)
                             },
+                            colors = ButtonDefaults.buttonColors(containerColor = FolderPresets.Sky.primary),
                             modifier = Modifier.testTag("listening_play_button")
                         ) {
-                            Icon(if (isSpeaking) Icons.Default.Stop else Icons.Default.VolumeUp, contentDescription = null)
+                            Icon(if (isSpeaking) Icons.Default.Stop else Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
                             Spacer(Modifier.width(6.dp))
                             Text(if (isSpeaking) "Stop Audio" else "Play Audio")
                         }
@@ -508,9 +572,9 @@ private fun ReadingPracticeTab(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(selected.titleEn, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                         OutlinedButton(onClick = { speechHelper.speakEnglish(selected.contentEn, speechRate) }) {
-                            Icon(Icons.Default.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, tint = FolderPresets.Amber.primary, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("Read Aloud")
+                            Text("Read Aloud", color = FolderPresets.Amber.primary)
                         }
                     }
                     Spacer(Modifier.height(8.dp))

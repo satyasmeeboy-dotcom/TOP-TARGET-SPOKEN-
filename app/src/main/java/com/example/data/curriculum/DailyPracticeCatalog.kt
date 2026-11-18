@@ -272,14 +272,14 @@ object DailyPracticeCatalog {
             explanationHi = "वह नए शब्द लिखकर शाम को उनका अभ्यास करता था।"
         ),
 
-        // Writing (evaluated by CHENI grammar analyzer!)
+        // Writing (evaluated by AI grammar analyzer!)
         DailyPracticeQuestion(
             id = "dp_write_1",
             kind = PracticeQuestionKind.WRITING,
             weakTopicTag = "writing",
             promptEn = "Write 1 clean English sentence about a goal you want to achieve this month.",
             promptHi = "इस महीने आप जो लक्ष्य हासिल करना चाहते हैं, उस पर 1 सही अंग्रेज़ी वाक्य लिखें।",
-            sampleResponse = "I want to practice spoken English with CHENI every day.",
+            sampleResponse = "I want to practice spoken English confidently every day.",
             explanationEn = "Start with a capital letter, use 'to + V1', and end with a full stop.",
             explanationHi = "वाक्य बड़े अक्षर से शुरू करें, 'to + V1' लगाएं और अंत में पूर्ण विराम (.) दें।"
         ),
@@ -294,7 +294,7 @@ object DailyPracticeCatalog {
             explanationHi = "'yesterday' के साथ हमेशा क्रिया का दूसरा रूप (V2) लगाएं।"
         ),
 
-        // Speaking (evaluated by CHENI speaking/grammar analyzer!)
+        // Speaking (evaluated by AI speaking/grammar analyzer!)
         DailyPracticeQuestion(
             id = "dp_speak_1",
             kind = PracticeQuestionKind.SPEAKING,

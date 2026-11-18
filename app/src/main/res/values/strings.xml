@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">Top Target Spoken English</string>
     <string name="app_tagline">Learn English, Speak Confidently!</string>
-    <string name="founder_credit">Founder &amp; Creator: CHENI</string>
     <string name="brand_badge_desc">Top Target Spoken English Logo</string>
     <string name="teacher_avatar_desc">AI Personal English Teacher Avatar</string>
     <string name="classroom_banner_desc">Virtual Classroom Banner</string>

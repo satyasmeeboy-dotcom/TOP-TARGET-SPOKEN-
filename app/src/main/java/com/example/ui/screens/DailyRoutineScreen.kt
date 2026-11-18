@@ -2,11 +2,14 @@ package com.example.ui.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -29,14 +32,12 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.NightsStay
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -58,6 +59,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -71,8 +74,12 @@ import com.example.model.GrammarMistakeFeedback
 import com.example.model.RoutinePeriod
 import com.example.speech.SpeechHelper
 import com.example.ui.components.BilingualText
+import com.example.ui.components.FolderAccent
+import com.example.ui.components.FolderPresets
 import com.example.ui.components.GrammarFeedbackCard
 import com.example.ui.components.MicrophonePrivacyDialog
+import com.example.ui.components.StudyFolderCard
+import com.example.ui.theme.PureWhite
 
 @Composable
 fun DailyRoutineScreen(
@@ -89,14 +96,19 @@ fun DailyRoutineScreen(
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Surface(
-            color = MaterialTheme.colorScheme.surface,
+            color = FolderPresets.Amber.softTint,
             tonalElevation = 1.dp,
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(FolderPresets.Amber.softTint, PureWhite)
+                        )
+                    )
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
@@ -105,19 +117,23 @@ fun DailyRoutineScreen(
                         .minimumInteractiveComponentSize()
                         .testTag("routine_back_button")
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Home")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back to Home",
+                        tint = FolderPresets.Amber.primary
+                    )
                 }
                 Spacer(Modifier.width(4.dp))
                 Column {
                     Text(
-                        text = if (bilingualMode == BilingualMode.HINDI_ASSIST) "दैनिक दिनचर्या (Daily Routine)" else "Daily Routine",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = if (bilingualMode == BilingualMode.HINDI_ASSIST) "दैनिक दिनचर्या (Daily Routine)" else "Daily Routine Folders",
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = FolderPresets.Amber.primary
                     )
                     Text(
-                        text = if (bilingualMode == BilingualMode.HINDI_ASSIST) "सुबह से रात तक अंग्रेज़ी बोलना सीखें" else "Speak your whole day in fluent English",
-                        style = MaterialTheme.typography.labelSmall,
+                        text = if (bilingualMode == BilingualMode.HINDI_ASSIST) "सुबह से रात तक — हर समय का अलग रंगीन फ़ोल्डर" else "Morning, Afternoon, Evening & Night — tap any folder",
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -137,6 +153,27 @@ fun DailyRoutineScreen(
     }
 }
 
+private fun periodAccent(period: RoutinePeriod): FolderAccent = when (period) {
+    RoutinePeriod.MORNING -> FolderPresets.Amber
+    RoutinePeriod.AFTERNOON -> FolderPresets.Sky
+    RoutinePeriod.EVENING -> FolderPresets.Coral
+    RoutinePeriod.NIGHT -> FolderPresets.Indigo
+}
+
+private fun periodIcon(period: RoutinePeriod): ImageVector = when (period) {
+    RoutinePeriod.MORNING -> Icons.Default.WbSunny
+    RoutinePeriod.AFTERNOON -> Icons.Default.WbSunny
+    RoutinePeriod.EVENING -> Icons.Default.WbTwilight
+    RoutinePeriod.NIGHT -> Icons.Default.NightsStay
+}
+
+private fun periodTimeRange(period: RoutinePeriod): String = when (period) {
+    RoutinePeriod.MORNING -> "6:00 AM – 8:30 AM"
+    RoutinePeriod.AFTERNOON -> "12:30 PM – 4:30 PM"
+    RoutinePeriod.EVENING -> "5:30 PM – 7:45 PM"
+    RoutinePeriod.NIGHT -> "8:30 PM – 10:15 PM"
+}
+
 @Composable
 fun DailyRoutineContent(
     todayTasks: List<DailyStudyTaskEntity>,
@@ -150,10 +187,16 @@ fun DailyRoutineContent(
     onClearRoutineFeedback: () -> Unit
 ) {
     val context = LocalContext.current
-    var selectedPeriod by remember { mutableStateOf<RoutinePeriod?>(null) }
+    var activeFolder by remember { mutableStateOf<RoutinePeriod?>(null) }
     var usePastTense by remember { mutableStateOf(false) }
     var customRoutineText by remember { mutableStateOf("") }
+    var showInlineStudioInFolder by remember { mutableStateOf(false) }
     var showMicPrivacyDialog by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = activeFolder != null) {
+        activeFolder = null
+        showInlineStudioInFolder = false
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -174,248 +217,384 @@ fun DailyRoutineContent(
             .toSet()
     }
     val practicedCount = allItems.count { it.id in practicedIds }
-    val filteredItems = remember(selectedPeriod) {
-        if (selectedPeriod == null) allItems else allItems.filter { it.period == selectedPeriod }
+
+    val onStartMic: () -> Unit = {
+        val hasPerm = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+        if (hasPerm) {
+            if (isListening) speechHelper.stopListening()
+            else speechHelper.startListening { spoken ->
+                customRoutineText = spoken
+                onCheckRoutineSentence(spoken)
+            }
+        } else {
+            showMicPrivacyDialog = true
+        }
     }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .widthIn(max = 680.dp),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // 1. Summary & Tense Switcher Card
-            item {
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                    ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    text = when (bilingualMode) {
-                                        BilingualMode.HINDI_ASSIST -> "दैनिक दिनचर्या अभ्यास (Morning to Night)"
-                                        else -> "Morning-to-Night Daily Routine"
-                                    },
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = "$practicedCount / ${allItems.size} routine steps practiced today",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    val script = filteredItems.joinToString(" ") {
-                                        if (usePastTense) it.pastTenseVariantEn else it.sentenceEn
-                                    }
-                                    speechHelper.speakEnglish(script, speechRate)
-                                },
-                                modifier = Modifier
-                                    .minimumInteractiveComponentSize()
-                                    .testTag("routine_listen_all_button")
-                            ) {
-                                Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text("Listen All")
-                            }
-                        }
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        val isWide = maxWidth >= 600.dp
 
-                        LinearProgressIndicator(
-                            progress = { (practicedCount.toFloat() / allItems.size.coerceAtLeast(1)).coerceIn(0f, 1f) },
+        if (activeFolder == null) {
+            // HUB VIEW: Progress Summary + 4 Colourful Time-of-Day Routine Folders + Practice Studio
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .widthIn(max = 720.dp),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // 1. Colourful Summary & Tense Switcher
+                item {
+                    Card(
+                        shape = RoundedCornerShape(22.dp),
+                        colors = CardDefaults.cardColors(containerColor = PureWhite),
+                        border = BorderStroke(1.5.dp, FolderPresets.Emerald.primary.copy(alpha = 0.4f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(50))
-                        )
-
-                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                            SegmentedButton(
-                                selected = !usePastTense,
-                                onClick = { usePastTense = false },
-                                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                                modifier = Modifier.testTag("routine_tense_present")
-                            ) {
-                                Text("Daily Habit (Present)")
-                            }
-                            SegmentedButton(
-                                selected = usePastTense,
-                                onClick = { usePastTense = true },
-                                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                                modifier = Modifier.testTag("routine_tense_past")
-                            ) {
-                                Text("Yesterday (Past)")
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 2. Period Filter Chips
-            item {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    item {
-                        FilterChip(
-                            selected = selectedPeriod == null,
-                            onClick = { selectedPeriod = null },
-                            label = { Text("All (${allItems.size})") },
-                            leadingIcon = { Icon(Icons.Default.Schedule, contentDescription = null, modifier = Modifier.size(16.dp)) },
-                            modifier = Modifier.testTag("routine_filter_all")
-                        )
-                    }
-                    items(RoutinePeriod.entries) { period ->
-                        val periodIcon = when (period) {
-                            RoutinePeriod.MORNING -> Icons.Default.WbSunny
-                            RoutinePeriod.AFTERNOON -> Icons.Default.WbSunny
-                            RoutinePeriod.EVENING -> Icons.Default.WbTwilight
-                            RoutinePeriod.NIGHT -> Icons.Default.NightsStay
-                        }
-                        FilterChip(
-                            selected = selectedPeriod == period,
-                            onClick = { selectedPeriod = period },
-                            label = {
-                                Text(
-                                    if (bilingualMode == BilingualMode.HINDI_ASSIST) "${period.labelHi} (${period.labelEn})"
-                                    else period.labelEn
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(FolderPresets.Emerald.softTint, FolderPresets.Sky.softTint)
+                                    )
                                 )
-                            },
-                            leadingIcon = { Icon(periodIcon, contentDescription = null, modifier = Modifier.size(16.dp)) },
-                            modifier = Modifier.testTag("routine_filter_${period.name.lowercase()}")
-                        )
-                    }
-                }
-            }
-
-            // 3. Write / Speak Your Own Daily Routine Studio
-            item {
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = when (bilingualMode) {
-                                BilingualMode.HINDI_ASSIST -> "अपनी दिनचर्या लिखें या बोलें — CHENI से जांचें"
-                                else -> "Speak or Write Your Own Daily Routine"
-                            },
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        BilingualText(
-                            english = "Describe your morning, study time, or night routine. CHENI will check tenses, prepositions, and verbs!",
-                            hindi = "अपनी सुबह, पढ़ाई या रात की दिनचर्या बताएं। CHENI आपके Tense, Preposition और Verb की जांच करेगी!",
-                            mode = bilingualMode
-                        )
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            items(DailyRoutineCatalog.starterTemplates) { (label, sample) ->
-                                OutlinedButton(
-                                    onClick = { customRoutineText = sample },
-                                    modifier = Modifier.minimumInteractiveComponentSize()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        text = when (bilingualMode) {
+                                            BilingualMode.HINDI_ASSIST -> "दैनिक दिनचर्या फ़ोल्डर्स (Morning to Night)"
+                                            else -> "Morning-to-Night Routine Folders"
+                                        },
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = FolderPresets.Emerald.primary
+                                    )
+                                    Text(
+                                        text = "$practicedCount / ${allItems.size} routine sentences practiced today",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Button(
+                                    onClick = {
+                                        val script = allItems.joinToString(" ") {
+                                            if (usePastTense) it.pastTenseVariantEn else it.sentenceEn
+                                        }
+                                        speechHelper.speakEnglish(script, speechRate)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = FolderPresets.Emerald.primary),
+                                    modifier = Modifier
+                                        .minimumInteractiveComponentSize()
+                                        .testTag("routine_listen_all_button")
                                 ) {
-                                    Text(label)
+                                    Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("Listen All")
+                                }
+                            }
+
+                            LinearProgressIndicator(
+                                progress = { (practicedCount.toFloat() / allItems.size.coerceAtLeast(1)).coerceIn(0f, 1f) },
+                                color = FolderPresets.Emerald.primary,
+                                trackColor = PureWhite,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(9.dp)
+                                    .clip(RoundedCornerShape(50))
+                            )
+
+                            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                                SegmentedButton(
+                                    selected = !usePastTense,
+                                    onClick = { usePastTense = false },
+                                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                                    modifier = Modifier.testTag("routine_tense_present")
+                                ) {
+                                    Text("Daily Habit (Present)")
+                                }
+                                SegmentedButton(
+                                    selected = usePastTense,
+                                    onClick = { usePastTense = true },
+                                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                                    modifier = Modifier.testTag("routine_tense_past")
+                                ) {
+                                    Text("Yesterday (Past)")
                                 }
                             }
                         }
-                        OutlinedTextField(
-                            value = customRoutineText,
-                            onValueChange = { customRoutineText = it },
-                            label = { Text("Your daily routine sentence") },
-                            placeholder = { Text("e.g., I wake up at 6 AM and practice English.") },
-                            minLines = 2,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("custom_routine_input")
+                    }
+                }
+
+                // 2. Section Heading for 4 Routine Folders
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = if (bilingualMode == BilingualMode.HINDI_ASSIST)
+                                "समय के अनुसार 4 दिनचर्या फ़ोल्डर (फ़ोल्डर खोलें)"
+                            else "4 Time-of-Day Routine Folders",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
                         )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedButton(
+                        Text(
+                            text = if (bilingualMode == BilingualMode.HINDI_ASSIST)
+                                "नीचे किसी भी फ़ोल्डर पर टैप करें और उसके वाक्य सुनें व अभ्यास करें"
+                            else "Tap a folder below to open its 4 spoken routine sentences",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                // 3. Responsive 4 Colourful Routine Folders (1-col big cards on phone, 2-col on tablet)
+                val periods = RoutinePeriod.entries
+                val periodRows = if (isWide) periods.chunked(2) else periods.map { listOf(it) }
+                items(periodRows) { rowPeriods ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        rowPeriods.forEach { period ->
+                            val periodItems = remember(period) { allItems.filter { it.period == period } }
+                            val doneInPeriod = periodItems.count { it.id in practicedIds }
+                            val accent = periodAccent(period)
+                            val sampleSentence = periodItems.firstOrNull()?.let {
+                                if (usePastTense) it.pastTenseVariantEn else it.sentenceEn
+                            }
+
+                            StudyFolderCard(
+                                tabLabel = "${period.labelEn.uppercase()} • ${periodTimeRange(period)}",
+                                title = if (bilingualMode == BilingualMode.HINDI_ASSIST)
+                                    "${period.labelHi} (${period.labelEn} Routine)"
+                                else "${period.labelEn} Routine",
+                                subtitle = if (bilingualMode == BilingualMode.ENGLISH_ONLY)
+                                    "${periodItems.size} Spoken Sentences & Tips"
+                                else "${period.labelHi} • ${periodItems.size} बोलने के वाक्य",
+                                badgeText = "$doneInPeriod/${periodItems.size} Practiced",
+                                icon = periodIcon(period),
+                                accent = accent,
+                                previewLine = sampleSentence?.let { "Sample: \"$it\"" },
+                                progress = doneInPeriod.toFloat() / periodItems.size.coerceAtLeast(1),
+                                actionLabel = "Open ${period.labelEn}",
                                 onClick = {
-                                    val hasPerm = ContextCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.RECORD_AUDIO
-                                    ) == PackageManager.PERMISSION_GRANTED
-                                    if (hasPerm) {
-                                        if (isListening) speechHelper.stopListening()
-                                        else speechHelper.startListening { spoken ->
-                                            customRoutineText = spoken
-                                            onCheckRoutineSentence(spoken)
-                                        }
-                                    } else {
-                                        showMicPrivacyDialog = true
-                                    }
+                                    activeFolder = period
+                                    showInlineStudioInFolder = false
                                 },
                                 modifier = Modifier
-                                    .minimumInteractiveComponentSize()
-                                    .testTag("routine_mic_button")
-                            ) {
-                                Icon(Icons.Default.Mic, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text(if (isListening) "Listening..." else "Speak")
-                            }
-                            Button(
-                                onClick = { onCheckRoutineSentence(customRoutineText) },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                                modifier = Modifier
                                     .weight(1f)
-                                    .minimumInteractiveComponentSize()
-                                    .testTag("check_routine_button")
-                            ) {
-                                Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text("Check with CHENI")
-                            }
-                        }
-
-                        routineFeedback?.let { fb ->
-                            Spacer(Modifier.height(4.dp))
-                            GrammarFeedbackCard(
-                                feedback = fb,
-                                bilingualMode = bilingualMode,
-                                onTryAgainClick = { customRoutineText = fb.correctedSentence }
+                                    .testTag("routine_folder_${period.name.lowercase()}")
                             )
-                            TextButton(onClick = onClearRoutineFeedback) {
-                                Text("Clear Feedback")
+                        }
+                        if (isWide && rowPeriods.size == 1) {
+                            Spacer(Modifier.weight(1f))
+                        }
+                    }
+                }
+
+                // 4. Write / Speak Your Own Daily Routine Studio
+                item {
+                    RoutinePracticeStudioCard(
+                        bilingualMode = bilingualMode,
+                        isListening = isListening,
+                        customRoutineText = customRoutineText,
+                        routineFeedback = routineFeedback,
+                        accent = FolderPresets.Teal,
+                        onTextChange = { customRoutineText = it },
+                        onSelectTemplate = { customRoutineText = it },
+                        onMicClick = onStartMic,
+                        onCheckClick = { onCheckRoutineSentence(customRoutineText) },
+                        onClearFeedback = onClearRoutineFeedback
+                    )
+                }
+            }
+        } else {
+            // FOLDER DETAIL VIEW: Only sentences belonging to the selected Time-of-Day Folder!
+            val folderPeriod = activeFolder!!
+            val accent = periodAccent(folderPeriod)
+            val folderItems = remember(folderPeriod) { allItems.filter { it.period == folderPeriod } }
+            val doneInFolder = folderItems.count { it.id in practicedIds }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .widthIn(max = 720.dp),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // 1. Vibrant Period Folder Header & Back Bar
+                item {
+                    Card(
+                        shape = RoundedCornerShape(22.dp),
+                        colors = CardDefaults.cardColors(containerColor = PureWhite),
+                        border = BorderStroke(1.8.dp, accent.primary.copy(alpha = 0.55f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(accent.softTint, PureWhite)
+                                    )
+                                )
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        activeFolder = null
+                                        showInlineStudioInFolder = false
+                                    },
+                                    modifier = Modifier
+                                        .minimumInteractiveComponentSize()
+                                        .testTag("routine_folders_back_button")
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "All Routine Folders",
+                                        tint = accent.primary
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        "All Folders",
+                                        color = accent.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Button(
+                                    onClick = {
+                                        val script = folderItems.joinToString(" ") {
+                                            if (usePastTense) it.pastTenseVariantEn else it.sentenceEn
+                                        }
+                                        speechHelper.speakEnglish(script, speechRate)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = accent.primary),
+                                    modifier = Modifier.minimumInteractiveComponentSize()
+                                ) {
+                                    Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("Listen Folder")
+                                }
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(accent.primary),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(periodIcon(folderPeriod), contentDescription = null, tint = PureWhite, modifier = Modifier.size(26.dp))
+                                }
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        text = "${folderPeriod.labelEn} Routine Folder (${folderPeriod.labelHi})",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = accent.primary
+                                    )
+                                    Text(
+                                        text = "${periodTimeRange(folderPeriod)} • $doneInFolder / ${folderItems.size} practiced",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            LinearProgressIndicator(
+                                progress = { doneInFolder.toFloat() / folderItems.size.coerceAtLeast(1) },
+                                color = accent.primary,
+                                trackColor = accent.softTint,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(50))
+                            )
+
+                            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                                SegmentedButton(
+                                    selected = !usePastTense,
+                                    onClick = { usePastTense = false },
+                                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                                    modifier = Modifier.testTag("routine_tense_present")
+                                ) {
+                                    Text("Daily Habit (Present)")
+                                }
+                                SegmentedButton(
+                                    selected = usePastTense,
+                                    onClick = { usePastTense = true },
+                                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                                    modifier = Modifier.testTag("routine_tense_past")
+                                ) {
+                                    Text("Yesterday (Past)")
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // 4. Morning-to-Night Routine Step Cards
-            items(filteredItems, key = { it.id }) { item ->
-                DailyRoutineStepCard(
-                    item = item,
-                    usePastTense = usePastTense,
-                    isPracticed = item.id in practicedIds,
-                    bilingualMode = bilingualMode,
-                    onSpeakClick = {
-                        val line = if (usePastTense) item.pastTenseVariantEn else item.sentenceEn
-                        speechHelper.speakEnglish(line, speechRate)
-                    },
-                    onCopyToPractice = {
-                        customRoutineText = if (usePastTense) item.pastTenseVariantEn else item.sentenceEn
-                    },
-                    onMarkPracticed = { onMarkRoutinePracticed(item.id) }
-                )
+                // 2. Inline Practice Studio inside folder when user taps "Edit & Practice"
+                if (showInlineStudioInFolder || routineFeedback != null) {
+                    item {
+                        RoutinePracticeStudioCard(
+                            bilingualMode = bilingualMode,
+                            isListening = isListening,
+                            customRoutineText = customRoutineText,
+                            routineFeedback = routineFeedback,
+                            accent = accent,
+                            onTextChange = { customRoutineText = it },
+                            onSelectTemplate = { customRoutineText = it },
+                            onMicClick = onStartMic,
+                            onCheckClick = { onCheckRoutineSentence(customRoutineText) },
+                            onClearFeedback = {
+                                onClearRoutineFeedback()
+                                showInlineStudioInFolder = false
+                            }
+                        )
+                    }
+                }
+
+                // 3. Only the 4 Sentences Inside This Time-of-Day Folder
+                items(folderItems, key = { it.id }) { item ->
+                    DailyRoutineStepCard(
+                        item = item,
+                        accent = accent,
+                        usePastTense = usePastTense,
+                        isPracticed = item.id in practicedIds,
+                        bilingualMode = bilingualMode,
+                        onSpeakClick = {
+                            val line = if (usePastTense) item.pastTenseVariantEn else item.sentenceEn
+                            speechHelper.speakEnglish(line, speechRate)
+                        },
+                        onCopyToPractice = {
+                            customRoutineText = if (usePastTense) item.pastTenseVariantEn else item.sentenceEn
+                            showInlineStudioInFolder = true
+                        },
+                        onMarkPracticed = { onMarkRoutinePracticed(item.id) }
+                    )
+                }
             }
         }
     }
@@ -432,8 +611,118 @@ fun DailyRoutineContent(
 }
 
 @Composable
+private fun RoutinePracticeStudioCard(
+    bilingualMode: BilingualMode,
+    isListening: Boolean,
+    customRoutineText: String,
+    routineFeedback: GrammarMistakeFeedback?,
+    accent: FolderAccent,
+    onTextChange: (String) -> Unit,
+    onSelectTemplate: (String) -> Unit,
+    onMicClick: () -> Unit,
+    onCheckClick: () -> Unit,
+    onClearFeedback: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = PureWhite),
+        border = BorderStroke(1.5.dp, accent.primary.copy(alpha = 0.45f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(5.dp)
+                    .background(accent.primary)
+            )
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    text = when (bilingualMode) {
+                        BilingualMode.HINDI_ASSIST -> "अपनी दिनचर्या लिखें या बोलें — व्याकरण जांचें"
+                        else -> "Speak or Write Your Own Daily Routine"
+                    },
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = accent.primary
+                )
+                BilingualText(
+                    english = "Describe your morning, study time, or night routine to check tenses, prepositions, and verbs!",
+                    hindi = "अपनी सुबह, पढ़ाई या रात की दिनचर्या बताएं और Tense, Preposition व Verb की जांच करें!",
+                    mode = bilingualMode
+                )
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(DailyRoutineCatalog.starterTemplates) { (label, sample) ->
+                        OutlinedButton(
+                            onClick = { onSelectTemplate(sample) },
+                            border = BorderStroke(1.dp, accent.primary),
+                            modifier = Modifier.minimumInteractiveComponentSize()
+                        ) {
+                            Text(label, color = accent.primary)
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = customRoutineText,
+                    onValueChange = onTextChange,
+                    label = { Text("Your daily routine sentence") },
+                    placeholder = { Text("e.g., I wake up at 6 AM and practice English.") },
+                    minLines = 2,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("custom_routine_input")
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedButton(
+                        onClick = onMicClick,
+                        border = BorderStroke(1.2.dp, accent.primary),
+                        modifier = Modifier
+                            .minimumInteractiveComponentSize()
+                            .testTag("routine_mic_button")
+                    ) {
+                        Icon(Icons.Default.Mic, contentDescription = null, tint = accent.primary, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(if (isListening) "Listening..." else "Speak", color = accent.primary)
+                    }
+                    Button(
+                        onClick = onCheckClick,
+                        colors = ButtonDefaults.buttonColors(containerColor = accent.primary),
+                        modifier = Modifier
+                            .weight(1f)
+                            .minimumInteractiveComponentSize()
+                            .testTag("check_routine_button")
+                    ) {
+                        Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Check Grammar")
+                    }
+                }
+
+                routineFeedback?.let { fb ->
+                    Spacer(Modifier.height(4.dp))
+                    GrammarFeedbackCard(
+                        feedback = fb,
+                        bilingualMode = bilingualMode,
+                        onTryAgainClick = { onTextChange(fb.correctedSentence) }
+                    )
+                    TextButton(onClick = onClearFeedback) {
+                        Text("Clear Feedback")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun DailyRoutineStepCard(
     item: DailyRoutineItem,
+    accent: FolderAccent,
     usePastTense: Boolean,
     isPracticed: Boolean,
     bilingualMode: BilingualMode,
@@ -445,106 +734,123 @@ private fun DailyRoutineStepCard(
     val activeHi = if (usePastTense) item.pastTenseVariantHi else item.sentenceHi
 
     Card(
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, if (isPracticed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = PureWhite),
+        border = BorderStroke(
+            width = if (isPracticed) 2.dp else 1.5.dp,
+            color = if (isPracticed) accent.primary else accent.primary.copy(alpha = 0.42f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(50)
-                ) {
-                    Text(
-                        text = "${item.timeLabel} • ${item.period.labelEn}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                    )
-                }
-                Spacer(Modifier.weight(1f))
-                IconButton(
-                    onClick = onSpeakClick,
-                    modifier = Modifier.minimumInteractiveComponentSize()
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                        contentDescription = "Listen to routine sentence",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-                if (isPracticed) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Practiced today",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            BilingualText(
-                english = item.titleEn,
-                hindi = item.titleHi,
-                mode = bilingualMode,
-                englishColor = MaterialTheme.colorScheme.primary,
-                hindiColor = MaterialTheme.colorScheme.onSurfaceVariant
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(5.dp)
+                    .background(accent.primary)
             )
-
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Box(Modifier.padding(12.dp)) {
-                    BilingualText(
-                        english = activeEn,
-                        hindi = activeHi,
-                        mode = bilingualMode
-                    )
-                }
-            }
-
-            BilingualText(
-                english = "Tip: ${item.grammarTipEn}",
-                hindi = "नियम: ${item.grammarTipHi}",
-                mode = bilingualMode,
-                englishColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                hindiColor = MaterialTheme.colorScheme.secondary
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onCopyToPractice,
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
-                        .testTag("try_routine_${item.id}")
-                ) {
-                    Text("Edit & Practice")
-                }
-                if (!isPracticed) {
-                    Button(
-                        onClick = onMarkPracticed,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier
-                            .weight(1f)
-                            .minimumInteractiveComponentSize()
-                            .testTag("mark_routine_${item.id}")
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        color = accent.softTint,
+                        shape = RoundedCornerShape(50),
+                        border = BorderStroke(1.dp, accent.primary.copy(alpha = 0.35f))
                     ) {
-                        Text("Mark Practiced (+1 Star)")
+                        Text(
+                            text = "${item.timeLabel} • ${item.period.labelEn}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = accent.primary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                        )
                     }
-                } else {
-                    OutlinedButton(
+                    Spacer(Modifier.weight(1f))
+                    IconButton(
                         onClick = onSpeakClick,
-                        modifier = Modifier
-                            .weight(1f)
-                            .minimumInteractiveComponentSize()
+                        modifier = Modifier.minimumInteractiveComponentSize()
                     ) {
-                        Text("Practiced Today ✓")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                            contentDescription = "Listen to routine sentence",
+                            tint = accent.primary
+                        )
+                    }
+                    if (isPracticed) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Practiced today",
+                            tint = accent.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+
+                BilingualText(
+                    english = item.titleEn,
+                    hindi = item.titleHi,
+                    mode = bilingualMode,
+                    englishColor = accent.primary,
+                    hindiColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Surface(
+                    color = accent.softTint.copy(alpha = 0.72f),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, accent.primary.copy(alpha = 0.25f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(Modifier.padding(14.dp)) {
+                        BilingualText(
+                            english = activeEn,
+                            hindi = activeHi,
+                            mode = bilingualMode
+                        )
+                    }
+                }
+
+                BilingualText(
+                    english = "Tip: ${item.grammarTipEn}",
+                    hindi = "नियम: ${item.grammarTipHi}",
+                    mode = bilingualMode,
+                    englishColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    hindiColor = accent.primary
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onCopyToPractice,
+                        border = BorderStroke(1.2.dp, accent.primary),
+                        modifier = Modifier
+                            .minimumInteractiveComponentSize()
+                            .testTag("try_routine_${item.id}")
+                    ) {
+                        Text("Edit & Practice", color = accent.primary)
+                    }
+                    if (!isPracticed) {
+                        Button(
+                            onClick = onMarkPracticed,
+                            colors = ButtonDefaults.buttonColors(containerColor = accent.primary),
+                            modifier = Modifier
+                                .weight(1f)
+                                .minimumInteractiveComponentSize()
+                                .testTag("mark_routine_${item.id}")
+                        ) {
+                            Text("Mark Practiced (+1 Star)")
+                        }
+                    } else {
+                        OutlinedButton(
+                            onClick = onSpeakClick,
+                            border = BorderStroke(1.2.dp, accent.primary),
+                            modifier = Modifier
+                                .weight(1f)
+                                .minimumInteractiveComponentSize()
+                        ) {
+                            Text("Practiced Today ✓", color = accent.primary)
+                        }
                     }
                 }
             }

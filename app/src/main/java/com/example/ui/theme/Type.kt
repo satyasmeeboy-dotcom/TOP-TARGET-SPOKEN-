@@ -31,74 +31,74 @@ val AppTypography = Typography(
     displaySmall = TextStyle(
         fontFamily = DisplayFontFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 30.sp,
-        lineHeight = 36.sp,
+        fontSize = 36.sp,
+        lineHeight = 44.sp,
         letterSpacing = (-0.25).sp
     ),
     headlineMedium = TextStyle(
         fontFamily = DisplayFontFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 24.sp,
-        lineHeight = 30.sp
+        fontSize = 30.sp,
+        lineHeight = 36.sp
     ),
     headlineSmall = TextStyle(
         fontFamily = DisplayFontFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp,
-        lineHeight = 26.sp
+        fontWeight = FontWeight.Bold,
+        fontSize = 25.sp,
+        lineHeight = 32.sp
     ),
     titleLarge = TextStyle(
         fontFamily = DisplayFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 23.sp,
+        lineHeight = 30.sp
+    ),
+    titleMedium = TextStyle(
+        fontFamily = BodyFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp,
+        lineHeight = 27.sp
+    ),
+    titleSmall = TextStyle(
+        fontFamily = BodyFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
         lineHeight = 24.sp
     ),
-    titleMedium = TextStyle(
+    bodyLarge = TextStyle(
+        fontFamily = BodyFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 19.sp,
+        lineHeight = 27.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = BodyFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 17.sp,
+        lineHeight = 24.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = BodyFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 15.sp,
+        lineHeight = 22.sp
+    ),
+    labelLarge = TextStyle(
         fontFamily = BodyFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
         lineHeight = 22.sp
     ),
-    titleSmall = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp,
-        lineHeight = 20.sp
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp
-    ),
-    bodyMedium = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp
-    ),
-    bodySmall = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 12.sp,
-        lineHeight = 16.sp
-    ),
-    labelLarge = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp,
-        lineHeight = 20.sp
-    ),
     labelMedium = TextStyle(
         fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 12.sp,
-        lineHeight = 16.sp
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 15.sp,
+        lineHeight = 20.sp
     ),
     labelSmall = TextStyle(
         fontFamily = BodyFontFamily,
         fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 14.sp
+        fontSize = 14.sp,
+        lineHeight = 19.sp
     )
 )

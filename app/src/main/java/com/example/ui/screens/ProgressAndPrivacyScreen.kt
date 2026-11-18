@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MilitaryTech
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -64,7 +65,10 @@ import com.example.data.local.StudentProfileEntity
 import com.example.data.local.TopicProgressEntity
 import com.example.model.BilingualMode
 import com.example.model.CertificateSpec
+import com.example.ui.components.FolderAccent
+import com.example.ui.components.FolderPresets
 import com.example.ui.theme.ErrorCrimson
+import com.example.ui.theme.PureWhite
 import com.example.ui.theme.WarmGoldContainer
 import com.example.ui.theme.WarmGoldTertiary
 
@@ -101,61 +105,77 @@ fun ProgressAndPrivacyScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // 1. Performance Analysis
+            // 1. Performance Analysis (Colourful 6-Skill Mastery)
             item {
                 Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(containerColor = PureWhite),
+                    border = BorderStroke(1.5.dp, FolderPresets.Emerald.primary.copy(alpha = 0.45f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Student Performance Analysis", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        Text(
-                            "Attempted: $attempted  •  Correct: $correct  •  Incorrect: $incorrect  •  Accuracy: $accuracy%",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            "Completed Grammar Lessons: $completedTopics / ${GrammarCurriculum.allTopics.size}  •  Words Mastered: ${learnedWords.size}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        SkillProgressRow("Grammar Mastery", profile?.grammarMastery ?: 10)
-                        SkillProgressRow("Vocabulary Mastery", profile?.vocabularyMastery ?: 10)
-                        SkillProgressRow("Speaking Progress", profile?.speakingMastery ?: 10)
-                        SkillProgressRow("Listening Progress", profile?.listeningMastery ?: 10)
-                        SkillProgressRow("Reading Progress", profile?.readingMastery ?: 10)
-                        SkillProgressRow("Writing Progress", profile?.writingMastery ?: 10)
-
-                        if (mistakes.isNotEmpty()) {
-                            Spacer(Modifier.height(4.dp))
+                    Column {
+                        Box(Modifier.fillMaxWidth().height(5.dp).background(FolderPresets.Emerald.primary))
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text("Student Performance Analysis", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = FolderPresets.Emerald.primary)
                             Text(
-                                text = "Weak Areas Detected: ${mistakes.take(3).joinToString { it.category }}",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = ErrorCrimson,
+                                "Attempted: $attempted  •  Correct: $correct  •  Incorrect: $incorrect  •  Accuracy: $accuracy%",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
                             )
+                            Text(
+                                "Completed Grammar Lessons: $completedTopics / ${GrammarCurriculum.allTopics.size}  •  Words Mastered: ${learnedWords.size}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            SkillProgressRow("Grammar Mastery", profile?.grammarMastery ?: 10, FolderPresets.Indigo)
+                            SkillProgressRow("Vocabulary Mastery", profile?.vocabularyMastery ?: 10, FolderPresets.Violet)
+                            SkillProgressRow("Speaking Progress", profile?.speakingMastery ?: 10, FolderPresets.Emerald)
+                            SkillProgressRow("Listening Progress", profile?.listeningMastery ?: 10, FolderPresets.Sky)
+                            SkillProgressRow("Reading Progress", profile?.readingMastery ?: 10, FolderPresets.Amber)
+                            SkillProgressRow("Writing Progress", profile?.writingMastery ?: 10, FolderPresets.Coral)
+
+                            if (mistakes.isNotEmpty()) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = "Weak Areas Detected: ${mistakes.take(3).joinToString { it.category }}",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = ErrorCrimson,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            // 2. Achievement Badges
+            // 2. Achievement Badges (Amber-Emerald Gradient)
             item {
                 Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)),
+                    shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(containerColor = PureWhite),
+                    border = BorderStroke(1.5.dp, FolderPresets.Amber.primary.copy(alpha = 0.45f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Brush.horizontalGradient(listOf(FolderPresets.Amber.softTint, FolderPresets.Emerald.softTint)))
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.MilitaryTech, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Spacer(Modifier.width(6.dp))
-                            Text("Achievement Badges (${badges.size})", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Icon(Icons.Default.MilitaryTech, contentDescription = null, tint = FolderPresets.Amber.primary, modifier = Modifier.size(26.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Achievement Badges (${badges.size})", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = FolderPresets.Amber.primary)
                         }
                         badges.forEach { b ->
-                            Text("★ ${b.titleEn} (${b.titleHi}) — ${b.descriptionEn}", style = MaterialTheme.typography.bodySmall)
+                            Surface(color = PureWhite.copy(alpha = 0.85f), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+                                Text(
+                                    "★ ${b.titleEn} (${b.titleHi}) — ${b.descriptionEn}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -320,8 +340,8 @@ fun ProgressAndPrivacyScreen(
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = when (bilingualMode) {
-                            BilingualMode.HINDI_ASSIST -> "संस्थापक एवं निर्माता: CHENI"
-                            else -> "Founder & Creator: CHENI"
+                            BilingualMode.HINDI_ASSIST -> "Top Target Spoken English • उत्कृष्टता प्रमाणपत्र"
+                            else -> "Top Target Spoken English • Verified Achievement"
                         },
                         style = MaterialTheme.typography.labelSmall
                     )
@@ -335,16 +355,29 @@ fun ProgressAndPrivacyScreen(
 }
 
 @Composable
-private fun SkillProgressRow(label: String, percent: Int) {
-    Column {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(label, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-            Text("$percent%", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+private fun SkillProgressRow(label: String, percent: Int, accent: FolderAccent) {
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+            Surface(color = accent.softTint, shape = RoundedCornerShape(50)) {
+                Text(
+                    "$percent%",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = accent.primary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp)
+                )
+            }
         }
-        Spacer(Modifier.height(3.dp))
         LinearProgressIndicator(
             progress = { (percent.coerceIn(0, 100)) / 100f },
-            modifier = Modifier.fillMaxWidth().height(7.dp).clip(RoundedCornerShape(50))
+            color = accent.primary,
+            trackColor = accent.softTint,
+            modifier = Modifier.fillMaxWidth().height(9.dp).clip(RoundedCornerShape(50))
         )
     }
 }

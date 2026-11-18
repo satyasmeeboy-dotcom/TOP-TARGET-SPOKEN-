@@ -281,7 +281,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             } else if (leveledUp != null) {
                 showCelebration(
                     title = "Level Up! Welcome to ${leveledUp!!.labelEn}",
-                    message = "CHENI noticed your strong accuracy and upgraded your level to ${leveledUp!!.labelEn}!",
+                    message = "Your strong accuracy upgraded your level to ${leveledUp!!.labelEn}!",
                     stars = 5
                 )
             }
@@ -331,7 +331,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 if (leveledUp != null) {
                     showCelebration(
                         title = "Level Up! Welcome to ${leveledUp.labelEn}",
-                        message = "Great improvement! CHENI updated your English level to ${leveledUp.labelEn}.",
+                        message = "Great improvement! Your English level is now ${leveledUp.labelEn}.",
                         stars = 5
                     )
                 }
@@ -645,8 +645,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
             if (todayPhrases == 10) {
                 val msg = when (bilingualMode.value) {
-                    BilingualMode.HINDI_ASSIST -> "CHENI कहती हैं: ${(aiRepository as? SampleAiRepository)?.bilingualComplimentPair(0)?.second ?: aiRepository.motivationalCompliment("phrases")}"
-                    else -> "CHENI says: ${aiRepository.motivationalCompliment("phrases")}"
+                    BilingualMode.HINDI_ASSIST -> (aiRepository as? SampleAiRepository)?.bilingualComplimentPair(0)?.second ?: aiRepository.motivationalCompliment("phrases")
+                    else -> aiRepository.motivationalCompliment("phrases")
                 }
                 showCelebration(
                     title = "Phrases & Idioms Mastered!",
@@ -683,7 +683,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             if (practicedRoutineIds.size == totalRoutineItems) {
                 showCelebration(
                     title = "Full Daily Routine Mastered!",
-                    message = "CHENI says: ${aiRepository.performanceCompliment(1.0f, true, "daily routine")}",
+                    message = aiRepository.performanceCompliment(1.0f, true, "daily routine"),
                     stars = 5
                 )
             } else if (leveledUp != null) {

@@ -2,9 +2,11 @@ package com.example.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,13 +24,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.RecordVoiceOver
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -63,8 +67,12 @@ import com.example.model.SkillType
 import com.example.model.StudentLevel
 import com.example.speech.SpeechHelper
 import com.example.ui.components.BilingualText
+import com.example.ui.components.FolderAccent
+import com.example.ui.components.FolderPresets
 import com.example.ui.components.GrammarFeedbackCard
 import com.example.ui.components.SampleAiNoticeBanner
+import com.example.ui.components.StudyFolderCard
+import com.example.ui.theme.PureWhite
 
 @Composable
 fun GrammarCourseScreen(
@@ -112,43 +120,100 @@ fun GrammarCourseScreen(
         else GrammarCurriculum.allTopics.filter { it.level == selectedLevel }
     }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        val isWide = maxWidth >= 600.dp
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .widthIn(max = 680.dp),
+                .widthIn(max = 720.dp),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Card(
+                    shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(containerColor = PureWhite),
+                    border = BorderStroke(1.5.dp, FolderPresets.Indigo.primary.copy(alpha = 0.4f)),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Complete English Grammar (18 Topics)",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Hindi Explanations • Examples • MCQs • Homework • Revision",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(50)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(FolderPresets.Indigo.softTint, FolderPresets.Emerald.softTint)
+                                )
+                            )
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Complete English Grammar (18 Topics)",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = FolderPresets.Indigo.primary
+                            )
+                            Text(
+                                text = "Hindi Explanations • Examples • MCQs • Homework • Revision",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Surface(
+                            color = FolderPresets.Emerald.softTint,
+                            shape = RoundedCornerShape(50),
+                            border = BorderStroke(1.dp, FolderPresets.Emerald.primary.copy(alpha = 0.35f))
                         ) {
-                            Icon(Icons.Default.CloudOff, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
-                            Spacer(Modifier.width(4.dp))
-                            Text("Offline Ready", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.CloudOff, contentDescription = null, modifier = Modifier.size(15.dp), tint = FolderPresets.Emerald.primary)
+                                Spacer(Modifier.width(4.dp))
+                                Text("Offline Ready", style = MaterialTheme.typography.labelMedium, color = FolderPresets.Emerald.primary, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Grammar Level Folders (Tap to Filter)",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    val levelRows = if (isWide) StudentLevel.entries.chunked(2) else StudentLevel.entries.map { listOf(it) }
+                    levelRows.forEach { rowLevels ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            rowLevels.forEach { lvl ->
+                                val lvlTopics = GrammarCurriculum.allTopics.filter { it.level == lvl }
+                                val doneCount = lvlTopics.count { progressMap[it.id]?.isCompleted == true }
+                                val accent = levelFolderAccent(lvl)
+                                StudyFolderCard(
+                                    tabLabel = lvl.labelEn.uppercase(),
+                                    title = "${lvl.labelEn} Grammar",
+                                    subtitle = "${lvl.labelHi} • ${lvlTopics.size} Complete Lessons",
+                                    badgeText = "$doneCount/${lvlTopics.size} Done",
+                                    icon = Icons.AutoMirrored.Filled.MenuBook,
+                                    accent = accent,
+                                    progress = doneCount.toFloat() / lvlTopics.size.coerceAtLeast(1),
+                                    actionLabel = if (selectedLevel == lvl) "Showing All" else "Open Level",
+                                    onClick = {
+                                        selectedLevel = if (selectedLevel == lvl) null else lvl
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            if (isWide && rowLevels.size == 1) Spacer(Modifier.weight(1f))
                         }
                     }
                 }
@@ -175,13 +240,14 @@ fun GrammarCourseScreen(
 
             items(topics, key = { it.id }) { topic ->
                 val prog = progressMap[topic.id]
+                val accent = levelFolderAccent(topic.level)
                 Card(
                     shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = PureWhite),
                     border = BorderStroke(
-                        1.dp,
-                        if (prog?.isCompleted == true) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.outline
+                        1.5.dp,
+                        if (prog?.isCompleted == true) accent.primary
+                        else accent.primary.copy(alpha = 0.35f)
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -189,56 +255,71 @@ fun GrammarCourseScreen(
                         .clickable { activeTopic = topic }
                         .testTag("grammar_topic_${topic.id}")
                 ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Surface(
-                            color = if (prog?.isCompleted == true) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.primaryContainer,
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.size(42.dp)
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(3.dp)
+                                .background(
+                                    Brush.horizontalGradient(listOf(accent.primary, accent.softTint))
+                                )
+                        )
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
+                            Surface(
+                                color = if (prog?.isCompleted == true) accent.primary else accent.softTint,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.size(44.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = "${topic.order}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (prog?.isCompleted == true) PureWhite else accent.primary
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "${topic.order}",
+                                    text = topic.titleEn,
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (prog?.isCompleted == true) MaterialTheme.colorScheme.onPrimary
-                                    else MaterialTheme.colorScheme.primary
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = topic.titleHi,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = accent.primary
+                                )
+                                Text(
+                                    text = "${topic.level.labelEn} • Best Quiz: ${prog?.bestQuizScore ?: 0}/${topic.mcqQuestions.size}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                        }
-                        Spacer(Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = topic.titleEn,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = topic.titleHi,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = "${topic.level.labelEn} • Best Quiz: ${prog?.bestQuizScore ?: 0}/${topic.mcqQuestions.size}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        if (prog?.isCompleted == true) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Completed",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                            if (prog?.isCompleted == true) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Completed",
+                                    tint = accent.primary
+                                )
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
+
+private fun levelFolderAccent(level: StudentLevel): FolderAccent = when (level) {
+    StudentLevel.BEGINNER -> FolderPresets.Emerald
+    StudentLevel.ELEMENTARY -> FolderPresets.Sky
+    StudentLevel.INTERMEDIATE -> FolderPresets.Indigo
+    StudentLevel.ADVANCED -> FolderPresets.Violet
 }
 
 @Composable
@@ -328,7 +409,7 @@ private fun GrammarTopicDetailView(
                                     onClick = { speechHelper.speakEnglish(ex.english, speechRate) },
                                     modifier = Modifier.minimumInteractiveComponentSize()
                                 ) {
-                                    Icon(Icons.Default.VolumeUp, contentDescription = "Listen example", tint = MaterialTheme.colorScheme.primary)
+                                    Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Listen example", tint = MaterialTheme.colorScheme.primary)
                                 }
                             }
                         }

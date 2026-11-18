@@ -14,7 +14,7 @@ class SampleAiRepository : AiRepository {
     override val isSampleImplementation: Boolean = true
 
     private val compliments = listOf(
-        "Excellent! You are doing amazing — CHENI is so proud of you!",
+        "Excellent! You are doing amazing — keep speaking with confidence!",
         "Very Good! Keep learning every single day—you are unstoppable!",
         "Fantastic! Your English is improving step by step, keep shining!",
         "Great Effort! Never give up—mistakes are proof that you are learning!",
@@ -23,11 +23,11 @@ class SampleAiRepository : AiRepository {
     )
 
     private val bilingualCompliments = listOf(
-        "Excellent! You are doing amazing—CHENI is proud of your dedication!" to "शाबाश! आप कमाल कर रहे हैं—CHENI को आपकी मेहनत पर गर्व है!",
-        "Mistakes are proof that you are learning—CHENI believes in you! Keep speaking boldly!" to "गलतियाँ इस बात का सबूत हैं कि आप सीख रहे हैं—CHENI आपके साथ है, निडर होकर बोलते रहें!",
-        "Fantastic progress! CHENI sees every word bringing fluency closer." to "शानदार प्रगति! CHENI देख रही है कि आपका हर नया शब्द आपको धाराप्रवाह बोलने के करीब लाता है।",
-        "You have true courage and curiosity—CHENI admires your learning spirit!" to "आपके पास सच्चा साहस और जिज्ञासा है—CHENI आपकी सीखने की भावना की सराहना करती है!",
-        "Great effort today! CHENI knows small daily steps create a massive glow up in English." to "आज का प्रयास बेहतरीन रहा! CHENI जानती है कि रोज़ के छोटे कदम अंग्रेज़ी में बड़ा निखार लाते हैं।"
+        "Excellent! You are doing amazing—be proud of your dedication!" to "शाबाश! आप कमाल कर रहे हैं—अपनी मेहनत पर गर्व करें!",
+        "Mistakes are proof that you are learning—keep speaking boldly!" to "गलतियाँ इस बात का सबूत हैं कि आप सीख रहे हैं—निडर होकर बोलते रहें!",
+        "Fantastic progress! Every new word brings fluency closer." to "शानदार प्रगति! आपका हर नया शब्द आपको धाराप्रवाह बोलने के करीब लाता है।",
+        "You have true courage and curiosity—keep up your learning spirit!" to "आपके पास सच्चा साहस और जिज्ञासा है—सीखने की इस भावना को बनाए रखें!",
+        "Great effort today! Small daily steps create a massive glow up in English." to "आज का प्रयास बेहतरीन रहा! रोज़ के छोटे कदम अंग्रेज़ी में बड़ा निखार लाते हैं।"
     )
 
     override fun motivationalCompliment(context: String): String {
@@ -44,7 +44,7 @@ class SampleAiRepository : AiRepository {
     ): String {
         return when {
             !isCorrect || scoreRatio < 0.5f ->
-                "Good effort trying! Review the corrected rule carefully—CHENI will guide you step by step."
+                "Good effort trying! Review the corrected rule carefully and practice step by step."
             scoreRatio >= 0.85f ->
                 "Excellent! Your grammar is improving and you are becoming more confident!"
             else ->

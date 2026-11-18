@@ -49,12 +49,12 @@ object DailyRoutineCatalog {
             id = "rt_m4",
             period = RoutinePeriod.MORNING,
             timeLabel = "8:15 AM",
-            titleEn = "English Practice with CHENI",
-            titleHi = "CHENI के साथ अंग्रेज़ी अभ्यास",
-            sentenceEn = "I practice speaking five English sentences with CHENI every morning.",
-            sentenceHi = "मैं हर सुबह CHENI के साथ पाँच अंग्रेज़ी वाक्य बोलने का अभ्यास करता/करती हूँ।",
-            pastTenseVariantEn = "I practiced speaking five English sentences with CHENI this morning.",
-            pastTenseVariantHi = "मैंने आज सुबह CHENI के साथ पाँच अंग्रेज़ी वाक्य बोलने का अभ्यास किया।",
+            titleEn = "Morning English Practice",
+            titleHi = "सुबह का अंग्रेज़ी अभ्यास",
+            sentenceEn = "I practice speaking five English sentences aloud every morning.",
+            sentenceHi = "मैं हर सुबह पाँच अंग्रेज़ी वाक्य जोर से बोलने का अभ्यास करता/करती हूँ।",
+            pastTenseVariantEn = "I practiced speaking five English sentences aloud this morning.",
+            pastTenseVariantHi = "मैंने आज सुबह पाँच अंग्रेज़ी वाक्य जोर से बोलने का अभ्यास किया।",
             grammarTipEn = "'practice' + verb-ing ('practice speaking') is natural spoken English.",
             grammarTipHi = "'practice' के बाद कार्य में '-ing' (practice speaking) लगाना स्वाभाविक है।"
         ),
@@ -223,7 +223,7 @@ object DailyRoutineCatalog {
     )
 
     val starterTemplates: List<Pair<String, String>> = listOf(
-        "Morning Routine" to "I wake up at 6 AM, brush my teeth, and practice English with CHENI.",
+        "Morning Routine" to "I wake up at 6 AM, brush my teeth, and practice spoken English.",
         "Study Routine" to "In the afternoon, I attend my classes and revise ten new vocabulary words.",
         "Night Routine" to "Before bed, I write three sentences in my diary and go to sleep at 10 PM."
     )
